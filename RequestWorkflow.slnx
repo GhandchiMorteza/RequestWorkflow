@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RequestWorkflow.Api/RequestWorkflow.Api.csproj" />
+    <Project Path="src/RequestWorkflow.Application/RequestWorkflow.Application.csproj" />
+    <Project Path="src/RequestWorkflow.Domain/RequestWorkflow.Domain.csproj" />
+    <Project Path="src/RequestWorkflow.Infrastructure/RequestWorkflow.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RequestWorkflow.Application.Tests/RequestWorkflow.Application.Tests.csproj" />
+  </Folder>
+</Solution>
