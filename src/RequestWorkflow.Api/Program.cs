@@ -1,4 +1,5 @@
 using RequestWorkflow.Application.Requests.Routing;
+using RequestWorkflow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddSingleton(requestRoutingOptions);
 builder.Services.AddScoped<
     IRequestRoutingService,
     RequestRoutingService>();
+
+builder.Services.AddInfrastructure(
+    builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
