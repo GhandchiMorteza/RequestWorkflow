@@ -1,9 +1,11 @@
+using RequestWorkflow.Application.Authentication;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddScoped<AuthenticationService>();
+
 var requestRoutingOptions = builder.Configuration
     .GetSection(RequestRoutingOptions.SectionName)
     .Get<RequestRoutingOptions>()
@@ -25,13 +27,13 @@ builder.Services.AddScoped<
 builder.Services.AddInfrastructure(
     builder.Configuration);
 
+builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -39,6 +41,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
