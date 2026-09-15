@@ -35,6 +35,9 @@ public sealed class RequestConfiguration
         builder.Property(request => request.CreatedAt)
             .IsRequired();
 
+        builder.Property(request => request.Metadata)
+            .HasColumnType("jsonb");
+
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(request => request.CreatedByUserId)

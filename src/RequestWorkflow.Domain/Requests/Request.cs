@@ -1,4 +1,6 @@
-﻿namespace RequestWorkflow.Domain.Requests;
+﻿using System.Text.Json;
+
+namespace RequestWorkflow.Domain.Requests;
 
 public sealed class Request
 {
@@ -13,7 +15,8 @@ public sealed class Request
         string? description,
         Guid createdByUserId,
         ApprovalRole assignedRole,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        JsonElement? metadata)
     {
         Id = id;
         Title = title;
@@ -22,6 +25,7 @@ public sealed class Request
         CreatedByUserId = createdByUserId;
         AssignedRole = assignedRole;
         CreatedAt = createdAt;
+        Metadata = metadata?.Clone();
         Status = RequestStatus.Pending;
     }
 
@@ -41,13 +45,16 @@ public sealed class Request
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public JsonElement? Metadata { get; private set; }
+
     public static Request Create(
         string title,
         decimal amount,
         string? description,
         Guid createdByUserId,
         ApprovalRole assignedRole,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        JsonElement? metadata = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
@@ -81,20 +88,19 @@ public sealed class Request
                 : description.Trim(),
             createdByUserId,
             assignedRole,
-            createdAt);
+            createdAt,
+            metadata);
     }
 
     public void Approve()
     {
         EnsurePending();
-
         Status = RequestStatus.Approved;
     }
 
     public void Reject()
     {
         EnsurePending();
-
         Status = RequestStatus.Rejected;
     }
 
