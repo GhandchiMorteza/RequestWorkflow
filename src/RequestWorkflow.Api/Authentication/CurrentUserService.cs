@@ -1,4 +1,5 @@
 ﻿using RequestWorkflow.Application.Abstractions.Authentication;
+using System.Security.Claims;
 
 namespace RequestWorkflow.Api.Authentication;
 
@@ -18,9 +19,9 @@ public sealed class CurrentUserService : ICurrentUserService
     {
         get
         {
-            var userIdValue = _httpContextAccessor
-                .HttpContext?
-                .User
+            var user = GetCurrentUser();
+
+            var userIdValue = user
                 .FindFirst("sub")?
                 .Value;
 
@@ -32,5 +33,33 @@ public sealed class CurrentUserService : ICurrentUserService
 
             return userId;
         }
+    }
+
+    public IReadOnlyCollection<string> Roles
+    {
+        get
+        {
+            var user = GetCurrentUser();
+
+            return [.. user
+                .FindAll("role")
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)];
+        }
+    }
+
+    private ClaimsPrincipal GetCurrentUser()
+    {
+        var user = _httpContextAccessor
+            .HttpContext?
+            .User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            throw new InvalidOperationException(
+                "Authenticated user is not available.");
+        }
+
+        return user;
     }
 }

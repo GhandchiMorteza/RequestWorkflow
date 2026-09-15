@@ -5,6 +5,8 @@ using RequestWorkflow.Infrastructure.Identity;
 using RequestWorkflow.Api.Authentication;
 using RequestWorkflow.Application.Abstractions.Authentication;
 using RequestWorkflow.Application.Requests.Create;
+using RequestWorkflow.Application.Requests.GetList;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +35,13 @@ builder.Services.AddInfrastructure(
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpContextAccessor();
@@ -45,6 +53,7 @@ builder.Services.AddScoped<
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddScoped<CreateRequestService>();
+builder.Services.AddScoped<GetRequestsService>();
 
 var app = builder.Build();
 

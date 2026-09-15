@@ -39,6 +39,7 @@ Content-Type: application/json
 }
 
 ### Login finance
+# @name loginFinance
 POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
 Content-Type: application/json
 
@@ -101,3 +102,40 @@ Content-Type: application/json
   "title": "Anonymous request",
   "amount": 500000
 }
+
+### Employee creates manager request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Manager approval request",
+  "amount": 800000,
+  "urgency": "زیاد"
+}
+
+### Employee creates finance request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Finance approval request",
+  "amount": 1500000,
+  "urgency": "متوسط"
+}
+
+### Employee request list
+GET {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+
+### Manager request list
+GET {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}
+
+### Finance request list
+GET {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginFinance.response.body.$.accessToken}}
+
+### Anonymous must not list requests
+GET {{RequestWorkflow.Api_HostAddress}}/api/requests

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RequestWorkflow.Api.Contracts.Requests;
 using RequestWorkflow.Application.Abstractions.Authentication;
 using RequestWorkflow.Application.Requests.Create;
+using RequestWorkflow.Application.Requests.GetList;
 using System.Text.Json;
 
 namespace RequestWorkflow.Api.Controllers;
@@ -12,13 +13,28 @@ namespace RequestWorkflow.Api.Controllers;
 public sealed class RequestsController : ControllerBase
 {
     private readonly CreateRequestService _createRequestService;
+    private readonly GetRequestsService _getRequestsService;
 
     public RequestsController(
-        CreateRequestService createRequestService)
+        CreateRequestService createRequestService,
+        GetRequestsService getRequestsService)
     {
         ArgumentNullException.ThrowIfNull(createRequestService);
+        ArgumentNullException.ThrowIfNull(getRequestsService);
 
         _createRequestService = createRequestService;
+        _getRequestsService = getRequestsService;
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<RequestListItem>>> GetList(
+        CancellationToken cancellationToken)
+    {
+        var requests = await _getRequestsService.GetAsync(
+            cancellationToken);
+
+        return Ok(requests);
     }
 
     [Authorize(Roles = ApplicationRoles.Employee)]
