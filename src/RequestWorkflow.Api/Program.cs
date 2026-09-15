@@ -1,39 +1,35 @@
 using RequestWorkflow.Api.Authentication;
 using RequestWorkflow.Api.ExceptionHandling;
+using RequestWorkflow.Api.OpenApi;
 using RequestWorkflow.Application;
 using RequestWorkflow.Application.Abstractions.Authentication;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
 using RequestWorkflow.Infrastructure.Identity;
+using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Application configuration
 var requestRoutingOptions = builder.Configuration
     .GetSection(RequestRoutingOptions.SectionName)
     .Get<RequestRoutingOptions>()
     ?? throw new InvalidOperationException(
         $"Configuration section '{RequestRoutingOptions.SectionName}' is missing.");
 
-// Application layer
 builder.Services.AddApplication(requestRoutingOptions);
 
-// Infrastructure layer
 builder.Services.AddInfrastructure(
     builder.Configuration);
 
-// Current authenticated user
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<
     ICurrentUserService,
     CurrentUserService>();
 
-// Authorization
 builder.Services.AddAuthorization();
 
-// Controllers + JSON serialization
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -42,7 +38,6 @@ builder.Services
             new JsonStringEnumConverter());
     });
 
-// Standard API error responses
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
@@ -52,11 +47,20 @@ builder.Services.AddProblemDetails(options =>
     };
 });
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<
+    GlobalExceptionHandler>();
+
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<
+        BearerSecuritySchemeTransformer>();
+
+    options.AddOperationTransformer<
+        AuthOperationTransformer>();
+});
 
 var app = builder.Build();
 
-// Development-only setup
 if (app.Environment.IsDevelopment())
 {
     var identitySeedOptions = builder.Configuration
@@ -73,20 +77,17 @@ if (app.Environment.IsDevelopment())
     await seeder.SeedAsync(identitySeedOptions);
 
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
-// Error handling
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-// HTTPS
 app.UseHttpsRedirection();
 
-// Security
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Endpoints
 app.MapControllers();
 
 app.Run();
