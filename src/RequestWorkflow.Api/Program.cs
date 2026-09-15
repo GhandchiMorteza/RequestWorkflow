@@ -1,9 +1,6 @@
 using RequestWorkflow.Api.Authentication;
+using RequestWorkflow.Application;
 using RequestWorkflow.Application.Abstractions.Authentication;
-using RequestWorkflow.Application.Authentication;
-using RequestWorkflow.Application.Requests.Create;
-using RequestWorkflow.Application.Requests.GetList;
-using RequestWorkflow.Application.Requests.Review;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
 using RequestWorkflow.Infrastructure.Identity;
@@ -11,31 +8,31 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<AuthenticationService>();
-
+// Application configuration
 var requestRoutingOptions = builder.Configuration
     .GetSection(RequestRoutingOptions.SectionName)
     .Get<RequestRoutingOptions>()
     ?? throw new InvalidOperationException(
         $"Configuration section '{RequestRoutingOptions.SectionName}' is missing.");
 
-if (requestRoutingOptions.ManagerApprovalMaxAmount <= 0)
-{
-    throw new InvalidOperationException(
-        "RequestRouting:ManagerApprovalMaxAmount must be greater than zero.");
-}
+// Application layer
+builder.Services.AddApplication(requestRoutingOptions);
 
-builder.Services.AddSingleton(requestRoutingOptions);
-
-builder.Services.AddScoped<
-    IRequestRoutingService,
-    RequestRoutingService>();
-
+// Infrastructure layer
 builder.Services.AddInfrastructure(
     builder.Configuration);
 
+// Current authenticated user
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<
+    ICurrentUserService,
+    CurrentUserService>();
+
+// Authorization
 builder.Services.AddAuthorization();
 
+// Controllers + JSON serialization
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -43,22 +40,20 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter());
     });
-builder.Services.AddOpenApi();
 
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddScoped<
-    ICurrentUserService,
-    CurrentUserService>();
-
-builder.Services.AddSingleton(TimeProvider.System);
-
-builder.Services.AddScoped<CreateRequestService>();
-builder.Services.AddScoped<GetRequestsService>();
-builder.Services.AddScoped<ReviewRequestService>();
+// Standard API error responses
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Extensions["traceId"] =
+            context.HttpContext.TraceIdentifier;
+    };
+});
 
 var app = builder.Build();
 
+// Development-only setup
 if (app.Environment.IsDevelopment())
 {
     var identitySeedOptions = builder.Configuration
@@ -69,19 +64,26 @@ if (app.Environment.IsDevelopment())
 
     using var scope = app.Services.CreateScope();
 
-    var seeder =
-        scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
+    var seeder = scope.ServiceProvider
+        .GetRequiredService<IdentitySeeder>();
 
     await seeder.SeedAsync(identitySeedOptions);
 
     app.MapOpenApi();
 }
 
+// Error handling
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+// HTTPS
 app.UseHttpsRedirection();
 
+// Security
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Endpoints
 app.MapControllers();
 
 app.Run();
