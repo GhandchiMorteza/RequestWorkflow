@@ -1,6 +1,7 @@
 using RequestWorkflow.Application.Authentication;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
+using RequestWorkflow.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,18 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+
+    var seeder =
+        scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
+
+    await seeder.SeedRolesAsync();
+
+    app.MapOpenApi();
+}
 
 if (app.Environment.IsDevelopment())
 {
