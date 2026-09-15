@@ -17,3 +17,30 @@ Content-Type: application/json
   "email": "employee@example.com",
   "password": "Employee123"
 }
+
+### Login employee
+POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "employee@example.com",
+  "password": "Employee123"
+}
+
+### Login manager
+POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager@example.com",
+  "password": "Manager123"
+}
+
+### Login finance
+POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "finance@example.com",
+  "password": "Finance123"
+}

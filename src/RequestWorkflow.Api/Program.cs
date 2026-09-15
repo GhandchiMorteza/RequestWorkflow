@@ -37,18 +37,19 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    var identitySeedOptions = builder.Configuration
+        .GetSection(IdentitySeedOptions.SectionName)
+        .Get<IdentitySeedOptions>()
+        ?? throw new InvalidOperationException(
+            $"Configuration section '{IdentitySeedOptions.SectionName}' is missing.");
+
     using var scope = app.Services.CreateScope();
 
     var seeder =
         scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
 
-    await seeder.SeedRolesAsync();
+    await seeder.SeedAsync(identitySeedOptions);
 
-    app.MapOpenApi();
-}
-
-if (app.Environment.IsDevelopment())
-{
     app.MapOpenApi();
 }
 
