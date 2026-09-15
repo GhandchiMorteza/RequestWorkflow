@@ -1,4 +1,5 @@
 using RequestWorkflow.Api.Authentication;
+using RequestWorkflow.Api.ExceptionHandling;
 using RequestWorkflow.Application;
 using RequestWorkflow.Application.Abstractions.Authentication;
 using RequestWorkflow.Application.Requests.Routing;
@@ -50,6 +51,8 @@ builder.Services.AddProblemDetails(options =>
             context.HttpContext.TraceIdentifier;
     };
 });
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
