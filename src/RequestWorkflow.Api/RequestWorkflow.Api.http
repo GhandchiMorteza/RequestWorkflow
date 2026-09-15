@@ -1,4 +1,4 @@
-@RequestWorkflow.Api_HostAddress = http://localhost:5113
+﻿@RequestWorkflow.Api_HostAddress = https://localhost:7200
 
 ### Register employee
 POST {{RequestWorkflow.Api_HostAddress}}/api/auth/register
@@ -19,6 +19,7 @@ Content-Type: application/json
 }
 
 ### Login employee
+# @name loginEmployee
 POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
 Content-Type: application/json
 
@@ -28,6 +29,7 @@ Content-Type: application/json
 }
 
 ### Login manager
+# @name loginManager
 POST {{RequestWorkflow.Api_HostAddress}}/api/auth/login
 Content-Type: application/json
 
@@ -43,4 +45,59 @@ Content-Type: application/json
 {
   "email": "finance@example.com",
   "password": "Finance123"
+}
+
+### Create request assigned to Manager
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Office equipment",
+  "amount": 800000,
+  "description": "New monitor for development team",
+  "urgency": "زیاد"
+}
+
+### Create request assigned to Finance
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Server purchase",
+  "amount": 1500000,
+  "description": "New server for infrastructure",
+  "urgency": "متوسط",
+  "department": "IT"
+}
+
+### Create request at exact manager threshold
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Boundary test",
+  "amount": 1000000,
+  "urgency": "کم"
+}
+
+### Manager must not create request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Unauthorized request",
+  "amount": 500000
+}
+
+### Anonymous user must not create request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests
+Content-Type: application/json
+
+{
+  "title": "Anonymous request",
+  "amount": 500000
 }

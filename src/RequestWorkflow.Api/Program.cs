@@ -2,6 +2,9 @@ using RequestWorkflow.Application.Authentication;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
 using RequestWorkflow.Infrastructure.Identity;
+using RequestWorkflow.Api.Authentication;
+using RequestWorkflow.Application.Abstractions.Authentication;
+using RequestWorkflow.Application.Requests.Create;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +35,16 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<
+    ICurrentUserService,
+    CurrentUserService>();
+
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddScoped<CreateRequestService>();
 
 var app = builder.Build();
 
