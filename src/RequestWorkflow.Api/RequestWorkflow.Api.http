@@ -139,3 +139,32 @@ Authorization: Bearer {{loginFinance.response.body.$.accessToken}}
 
 ### Anonymous must not list requests
 GET {{RequestWorkflow.Api_HostAddress}}/api/requests
+
+@managerRequestId = 47aacbf9-005f-4939-a81c-38b102b72eff
+
+### Manager approves manager request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/47aacbf9-005f-4939-a81c-38b102b72eff/approve
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}
+
+### Cannot reject already approved request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/47aacbf9-005f-4939-a81c-38b102b72eff/reject
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}
+
+### Manager cannot approve Finance request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/eed442ec-22ea-42d2-adc1-963d91da52e9/approve
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}
+
+### Finance approves finance request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/eed442ec-22ea-42d2-adc1-963d91da52e9/approve
+Authorization: Bearer {{loginFinance.response.body.$.accessToken}}
+
+### Employee cannot approve request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/47aacbf9-005f-4939-a81c-38b102b72eff/approve
+Authorization: Bearer {{loginEmployee.response.body.$.accessToken}}
+
+### Anonymous cannot approve request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/47aacbf9-005f-4939-a81c-38b102b72eff/approve
+
+### Missing request
+POST {{RequestWorkflow.Api_HostAddress}}/api/requests/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/approve
+Authorization: Bearer {{loginManager.response.body.$.accessToken}}

@@ -1,11 +1,12 @@
+using RequestWorkflow.Api.Authentication;
+using RequestWorkflow.Application.Abstractions.Authentication;
 using RequestWorkflow.Application.Authentication;
+using RequestWorkflow.Application.Requests.Create;
+using RequestWorkflow.Application.Requests.GetList;
+using RequestWorkflow.Application.Requests.Review;
 using RequestWorkflow.Application.Requests.Routing;
 using RequestWorkflow.Infrastructure;
 using RequestWorkflow.Infrastructure.Identity;
-using RequestWorkflow.Api.Authentication;
-using RequestWorkflow.Application.Abstractions.Authentication;
-using RequestWorkflow.Application.Requests.Create;
-using RequestWorkflow.Application.Requests.GetList;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddScoped<CreateRequestService>();
 builder.Services.AddScoped<GetRequestsService>();
+builder.Services.AddScoped<ReviewRequestService>();
 
 var app = builder.Build();
 
