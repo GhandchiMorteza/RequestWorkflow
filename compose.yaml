@@ -1,20 +1,73 @@
 services:
+
   postgres:
     image: postgres:17-alpine
     container_name: request-workflow-postgres
+
     environment:
       POSTGRES_DB: request_workflow
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+
     ports:
       - "127.0.0.1:5432:5432"
+
     volumes:
       - request_workflow_postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d request_workflow"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+
+  migrations:
+    build:
+      context: .
+      dockerfile: src/RequestWorkflow.Api/Dockerfile
+      target: migrations
+
+    command:
+      - "--connection"
+      - "Host=postgres;Port=5432;Database=request_workflow;Username=postgres;Password=postgres"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: "no"
+
+
+  api:
+    build:
+      context: .
+      dockerfile: src/RequestWorkflow.Api/Dockerfile
+      target: final
+
+    container_name: request-workflow-api
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=request_workflow;Username=postgres;Password=postgres"
+
+      Jwt__SecretKey: "RequestWorkflowDevelopmentJwtKey-ChangeMe-2026!"
+
+      IdentitySeed__EmployeePassword: "Employee123"
+      IdentitySeed__ManagerPassword: "Manager123"
+      IdentitySeed__FinancePassword: "Finance123"
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+      migrations:
+        condition: service_completed_successfully
+
 
 volumes:
   request_workflow_postgres_data:
