@@ -5,7 +5,7 @@ POST {{RequestWorkflow.Api_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "employee@example.com",
+  "email": "employee2@example.com",
   "password": "Employee123"
 }
 
